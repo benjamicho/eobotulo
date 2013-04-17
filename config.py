@@ -67,7 +67,7 @@ tez_file = "/home/eobot/tez.txt"
 # Path to etymological dictionary. Used by the .etim command.
 etim_file = "/home/eobot/etim.txt"
 
-# Path to etymological dictionary. Used by the .etim command.
+# Path to SSV dictionary. Used by the .ssv command.
 etim_file = "/home/eobot/ssv.txt"
 
 # Path to ESPDIC dictionary file. Used buy the .espdic command.
