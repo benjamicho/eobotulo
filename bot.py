@@ -136,7 +136,7 @@ class Bot(BotBase):
 						title = parser.unescape(title)
 						if type(title) == unicode:
 							title = title.encode('utf-8')
-						self.send(to, "Le titulo del pagina es: %s" % title)
+						self.send(to, "Titolo: %s" % title)
 			except Exception as e:
 				error = "ERROR: %s" % str(e)
 				if config.do_syslog:
