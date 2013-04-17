@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
+import sys, os, re, syslog
+from daemon import Daemon
+from bot import Bot
+import config
+
+__author__ = "tommjames"
+__version__ = "2.00"
+
+class EoBotDaemon(Daemon):
+	
+	def handle_sigterm(self, signum, frame):
+		self.eobot.connection.disconnect(config.die_msg)
+		Daemon.handle_sigterm(self, signum, frame)		
+
+	def run(self):
+		""" Overridding from Daemon """
+		try:
+			self.eobot = Bot([(config.server, config.port)],
+							   config.nick,
+							   config.name,
+							   config.reconnect)
+			self.eobot.start()
+		except Exception as e:
+			if config.do_syslog:
+				syslog.syslog(syslog.LOG_ERR, "ERROR: %s" % str(e))
+			sys.exit(1)
+
+def main():
+	try:
+		if os.getuid() != 0:
+			raise Exception("EoBot must be started as root.")	
+		argc = len(sys.argv)
+		if argc > 1 and not re.match("(start|stop|restart|status)$", sys.argv[1]):
+			print "Usage: eobotd start|stop|restart|status"
+			sys.exit(2)
+		else:
+			daemon = EoBotDaemon(config.pidfile,
+								 "eobot" if config.do_syslog else "",
+								 __version__,
+								 config.run_as,
+								 True)
+			arg = "START" if argc == 1 else sys.argv[1].upper()
+			if arg == "START":
+				daemon.start()
+			elif arg == "STOP":
+				daemon.stop()
+			elif arg == "RESTART":
+				daemon.restart()
+			elif arg == "STATUS":
+				pid = daemon.get_pid()
+				print ("Running with PID %s." % pid) if pid else "Not running."
+			sys.exit(0)
+	except Exception as e:
+		print >> sys.stderr, e
+		if config.do_syslog:
+			syslog.syslog(syslog.LOG_ERR, "ERROR: %s" % str(e))
+		sys.exit(1)
+
+if __name__ == "__main__":
+	main()
